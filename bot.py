@@ -29,8 +29,7 @@ app = FastAPI()
 async def webhook(request: Request):
     json_data = await request.json()
     update = types.Update.model_validate(json_data, context={"bot": bot})
-    async with bot:
-        await dp.feed_update(bot, update)
+    await dp.feed_update(bot, update)
     return {"ok": True}
 
 @app.get("/")
