@@ -18,7 +18,7 @@ async def get_file_id(message: types.Message):
 
 @dp.message()
 async def start_handler(message: types.Message):
-    await message.answer("Салом! Менга расм юборинг, мен uning file_id sini chiqarib beraman.")
+    await message.answer("Салом! Менга расм ёки ҳужжат юборинг, мен uning file_id sini chiqarib beraman.")
 
 @app.post("/")
 async def webhook(request: Request):
