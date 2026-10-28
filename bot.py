@@ -7,6 +7,10 @@ dp = Dispatcher()
 
 app = FastAPI()
 
+@dp.message(F.text & (F.text == "/start"))
+async def start_handler(message: types.Message):
+    await message.answer("Салом! Менга расм ёки ҳужжат юборинг, мен унинг file_id сини чиқариб бераман.")
+
 @dp.message(F.photo | F.document)
 async def get_file_id(message: types.Message):
     if message.photo:
@@ -15,10 +19,6 @@ async def get_file_id(message: types.Message):
     elif message.document:
         file_id = message.document.file_id
         await message.answer(f"✅ ФАЙЛНИНГ FILE_ID СИ:\n\n<code>{file_id}</code>", parse_mode="HTML")
-
-@dp.message()
-async def start_handler(message: types.Message):
-    await message.answer("Салом! Менга расм юборинг, мен uning file_id sini chiqarib beraman.")
 
 @app.post("/")
 async def webhook(request: Request):
