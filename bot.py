@@ -24,6 +24,6 @@ async def start_handler(message: types.Message):
 @app.post("/")
 async def webhook(request: Request):
     data = await request.json()
-    update = types.Update(**data)
+    update = types.Update.model_validate(data, context={"bot": bot})
     await dp.feed_update(bot, update)
     return {"ok": True}
