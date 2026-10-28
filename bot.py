@@ -1,4 +1,3 @@
-import os
 from aiogram import Bot, Dispatcher, types, F
 from fastapi import FastAPI, Request
 
@@ -23,7 +22,14 @@ async def start_handler(message: types.Message):
 
 @app.post("/")
 async def webhook(request: Request):
-    data = await request.json()
-    update = types.Update.model_validate(data, context={"bot": bot})
-    await dp.feed_update(bot, update)
+    try:
+        data = await request.json()
+        update = types.Update.model_validate(data, context={"bot": bot})
+        await dp.feed_update(bot, update)
+    except Exception as e:
+        print(f"Xatolik: {e}")
     return {"ok": True}
+
+@app.get("/")
+async def index():
+    return {"status": "Bot is running!"}
