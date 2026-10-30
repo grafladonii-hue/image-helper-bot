@@ -1,5 +1,5 @@
 from aiogram import Bot, Dispatcher, types, F
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 
 TOKEN = "8986625298:AAFC9UWMeKqHZEnwoloXJM1Agmp2GOiSch8"
 bot = Bot(token=TOKEN)
@@ -19,11 +19,8 @@ async def get_file_url(message: types.Message):
         file_id = message.document.file_id
         
     try:
-        # Telegram API орқали файлнинг йўлини (file_path) оламиз
         file = await bot.get_file(file_id)
         file_path = file.file_path
-        
-        # Тўғридан-тўғри веб-ҳаволани яшаймиз
         direct_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
         
         await message.answer(
@@ -33,16 +30,16 @@ async def get_file_url(message: types.Message):
     except Exception as e:
         await message.answer(f"❌ Xatolik yuz berdi: {e}")
 
-@app.post("/")
+@app.post("/api/webhook")
 async def webhook(request: Request):
     try:
         data = await request.json()
-        update = types.Update.model_validate(data, context={"bot": bot})
-        await dp.feed_update(bot, update)
+        telegram_update = types.Update.model_validate(data, context={"bot": bot})
+        await dp.feed_update(bot, telegram_update)
     except Exception as e:
-        print(f"Xatolik: {e}")
-    return {"ok": True}
+        print(f"Webhook xatoligi: {e}")
+    return Response(content="OK", status_code=200)
 
 @app.get("/")
 async def index():
-    return {"status": "Bot is running!"}
+    return {"status": "Bot is running on Vercel!"}
