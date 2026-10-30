@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher, types, F
 from fastapi import FastAPI, Request
+import aiohttp
 
 TOKEN = "8986625298:AAFC9UWMeKqHZEnwoloXJM1Agmp2GOiSch8"
 bot = Bot(token=TOKEN)
@@ -20,6 +21,19 @@ async def get_file_id(message: types.Message):
         file_id = message.document.file_id
         await message.answer(f"✅ ФАЙЛНИНГ FILE_ID СИ:\n\n<code>{file_id}</code>", parse_mode="HTML")
 
+# --- МАНА BU YANGI FUNKSIYA QO'SHILDI ---
+@app.get("/get-image-url/{file_id}")
+async def get_image_url(file_id: str):
+    async with aiohttp.ClientSession() as session:
+        api_url = f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}"
+        async with session.get(api_url) as resp:
+            res_json = await resp.json()
+            if res_json.get("ok"):
+                file_path = res_json["result"]["file_path"]
+                download_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
+                return {"url": download_url}
+    return {"url": ""}
+
 @app.post("/")
 async def webhook(request: Request):
     try:
@@ -33,4 +47,3 @@ async def webhook(request: Request):
 @app.get("/")
 async def index():
     return {"status": "Bot is running!"}
-
