@@ -1,6 +1,5 @@
 from aiogram import Bot, Dispatcher, types, F
 from fastapi import FastAPI, Request
-import aiohttp
 
 TOKEN = "8986625298:AAFC9UWMeKqHZEnwoloXJM1Agmp2GOiSch8"
 bot = Bot(token=TOKEN)
@@ -10,29 +9,29 @@ app = FastAPI()
 
 @dp.message(F.text & (F.text == "/start"))
 async def start_handler(message: types.Message):
-    await message.answer("Салом! Менга расм ёки ҳужжат юборинг, мен унинг file_id сини чиқариб бераман.")
+    await message.answer("Салом! Менга расм ёки ҳужжат юборинг, мен унинг админка учун тайёр веб-ҳаволасини чиқариб бераман.")
 
 @dp.message(F.photo | F.document)
-async def get_file_id(message: types.Message):
+async def get_file_url(message: types.Message):
     if message.photo:
         file_id = message.photo[-1].file_id
-        await message.answer(f"✅ РАСМНИНГ FILE_ID СИ:\n\n<code>{file_id}</code>", parse_mode="HTML")
-    elif message.document:
+    else:
         file_id = message.document.file_id
-        await message.answer(f"✅ ФАЙЛНИНГ FILE_ID СИ:\n\n<code>{file_id}</code>", parse_mode="HTML")
-
-# --- МАНА BU YANGI FUNKSIYA QO'SHILDI ---
-@app.get("/get-image-url/{file_id}")
-async def get_image_url(file_id: str):
-    async with aiohttp.ClientSession() as session:
-        api_url = f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}"
-        async with session.get(api_url) as resp:
-            res_json = await resp.json()
-            if res_json.get("ok"):
-                file_path = res_json["result"]["file_path"]
-                download_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
-                return {"url": download_url}
-    return {"url": ""}
+        
+    try:
+        # Telegram API орқали файлнинг йўлини (file_path) оламиз
+        file = await bot.get_file(file_id)
+        file_path = file.file_path
+        
+        # Тўғридан-тўғри веб-ҳаволани яшаймиз
+        direct_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
+        
+        await message.answer(
+            f"✅ РАСМНИНГ ВЕБ ҲАВОЛАСИ:\n\n<code>{direct_url}</code>", 
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        await message.answer(f"❌ Xatolik yuz berdi: {e}")
 
 @app.post("/")
 async def webhook(request: Request):
